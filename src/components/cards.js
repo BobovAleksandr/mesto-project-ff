@@ -27,12 +27,13 @@ const initialCards = [
 
 const cardTemplate = document.querySelector('#card-template').content
 
-function createCard(card, remove, like) {
+function createCard(card, remove, like, zoomCard) {
   const currentCard = cardTemplate.querySelector('.card').cloneNode(true)
   currentCard.querySelector('.card__image').src = card.link
   currentCard.querySelector('.card__title').textContent = card.name
   currentCard.querySelector('.card__delete-button').addEventListener('click', remove)
   currentCard.querySelector('.card__like-button').addEventListener('click', like)
+  currentCard.querySelector('.card__image').addEventListener('click', zoomCard)
   return currentCard
 }
 
