@@ -37,7 +37,7 @@ newPlaceButton.addEventListener('click', () => {
 
 function newPlaceFormSubmit(evt) {
   evt.preventDefault()
-  let newPlaceCard = {
+  const newPlaceCard = {
     name: newPlaceName.value,
     link: newPlaceUrl.value,
   }
@@ -48,7 +48,7 @@ function newPlaceFormSubmit(evt) {
 }
 
 function zoomCard(event) {
-  let currentCard = event.target.closest('.card')
+  const currentCard = event.target.closest('.card')
   const imageModal = document.querySelector('.popup_type_image')
   imageModal.querySelector('.popup__image').src = currentCard.querySelector('.card__image').src
   imageModal.querySelector('.popup__caption').textContent = currentCard.querySelector('.card__title').textContent
