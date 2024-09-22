@@ -1,5 +1,6 @@
 import './pages/index.css'; 
-import { initialCards,  createCard, deleteCard, pressLike } from './components/cards.js';
+import { createCard, deleteCard, pressLike } from './components/card.js';
+import { initialCards } from './components/cards.js';
 import { openModal, closeModal } from './components/modal.js';
 
 const placesList = document.querySelector('.places__list')
@@ -10,18 +11,17 @@ const profileEditButton = document.querySelector('.profile__edit-button')
 const profileEditModal = document.querySelector('.popup_type_edit')
 const profileEditForm = document.forms['edit-profile']
 
+const modals = document.querySelectorAll('.popup')
+
 const newPlaceModal = document.querySelector('.popup_type_new-card')
 const newPlaceButton = document.querySelector('.profile__add-button')
 const newPlaceForm = document.forms['new-place']
-const newPlaceName = newPlaceForm.elements['place-name']
-const newPlaceUrl = newPlaceForm.elements['link']
+const newPlaceNameInput = newPlaceForm.elements['place-name']
+const newPlaceUrlInput = newPlaceForm.elements['link']
 
-profileEditButton.addEventListener('click', () => {
-  openModal(profileEditModal)
-  profileEditForm.elements.name.value = profileName.textContent
-  profileEditForm.elements.description.value = profileDescription.textContent
-  profileEditForm.addEventListener('submit', profileFormSubmit)
-})
+const imageModal = document.querySelector('.popup_type_image')
+const imageModalPicture = imageModal.querySelector('.popup__image')
+const imageModalCaption = imageModal.querySelector('.popup__caption')
 
 function profileFormSubmit(evt) {
   evt.preventDefault()
@@ -30,31 +30,49 @@ function profileFormSubmit(evt) {
   closeModal(profileEditModal)
 }
 
-newPlaceButton.addEventListener('click', () => {
-  openModal(newPlaceModal)
-  newPlaceForm.addEventListener('submit', newPlaceFormSubmit)
-})
-
 function newPlaceFormSubmit(evt) {
   evt.preventDefault()
   const newPlaceCard = {
-    name: newPlaceName.value,
-    link: newPlaceUrl.value,
+    name: newPlaceNameInput.value,
+    link: newPlaceUrlInput.value,
   }
-  initialCards.unshift(newPlaceCard)
-  placesList.prepend(createCard(newPlaceCard, deleteCard, pressLike, zoomCard))
+  placesList.prepend(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
   newPlaceForm.reset()
   closeModal(newPlaceModal)
 }
 
-function zoomCard(event) {
-  const currentCard = event.target.closest('.card')
-  const imageModal = document.querySelector('.popup_type_image')
-  imageModal.querySelector('.popup__image').src = currentCard.querySelector('.card__image').src
-  imageModal.querySelector('.popup__caption').textContent = currentCard.querySelector('.card__title').textContent
+function zoomCard(cardName, cardUrl) {
+  imageModalPicture.src = cardUrl
+  imageModalPicture.alt = cardName
+  imageModalCaption.textContent = cardName
   openModal(imageModal)
 }
 
-initialCards.forEach(card => {
-  placesList.append(createCard(card, deleteCard, pressLike, zoomCard))
+profileEditButton.addEventListener('click', () => {
+  openModal(profileEditModal)
+  profileEditForm.elements.name.value = profileName.textContent
+  profileEditForm.elements.description.value = profileDescription.textContent
+})
+
+newPlaceButton.addEventListener('click', () => {
+  openModal(newPlaceModal)
+})
+
+newPlaceForm.addEventListener('submit', newPlaceFormSubmit)
+
+profileEditForm.addEventListener('submit', profileFormSubmit)
+
+modals.forEach(modal => {
+  modal.querySelector('.popup__close').addEventListener('click', () => {
+    closeModal(modal)
+  })
+  modal.addEventListener('click', evt => {
+    if (evt.target === modal) {
+      closeModal(modal)
+    }
+  })
+})
+
+initialCards.forEach(newPlaceCard => {
+  placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
 })
