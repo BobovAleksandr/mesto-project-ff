@@ -1,12 +1,7 @@
 function openModal(popup) {
   popup.classList.add('popup_is-opened')
 
-  // TODO - Удаление обрабочитка на Esc
-  document.addEventListener('keydown', evt => {
-    if (popup.classList.contains('popup_is-opened') && evt.key === "Escape") {
-      closeModal(popup)
-    }
-  })
+  document.addEventListener('keydown', closeCurrentModal)
 
   popup.querySelector('.popup__close').addEventListener('click', () => {
     closeModal(popup)
@@ -22,6 +17,13 @@ function openModal(popup) {
 
 function closeModal(popup) {
   popup.classList.remove('popup_is-opened')
+}
+
+function closeCurrentModal(evt) {
+  if (evt.key === "Escape") {
+    document.querySelector('.popup_is-opened').classList.remove('popup_is-opened')
+    document.removeEventListener('keydown', closeCurrentModal)
+  }
 }
 
 export { openModal, closeModal }

@@ -47,7 +47,7 @@ function newPlaceFormSubmit(evt) {
   closeModal(newPlaceModal)
 }
 
-function zoomCard() {
+function zoomCard(event) {
   let currentCard = event.target.closest('.card')
   const imageModal = document.querySelector('.popup_type_image')
   imageModal.querySelector('.popup__image').src = currentCard.querySelector('.card__image').src

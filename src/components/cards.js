@@ -37,11 +37,11 @@ function createCard(card, remove, like, zoomCard) {
   return currentCard
 }
 
-function deleteCard() {
+function deleteCard(event) {
   event.target.closest('.card').remove()
 }
 
-function pressLike() {
+function pressLike(event) {
   event.target.classList.toggle('card__like-button_is-active')
 }
 
