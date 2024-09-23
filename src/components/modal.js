@@ -10,8 +10,7 @@ function closeModal(popup) {
 
 function closeModalByEsc(evt) {
   if (evt.key === "Escape") {
-    document.querySelector('.popup_is-opened').classList.remove('popup_is-opened')
-    document.removeEventListener('keydown', closeModalByEsc)
+    closeModal(document.querySelector('.popup_is-opened'))
   }
 }
 
