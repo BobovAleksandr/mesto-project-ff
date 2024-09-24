@@ -26,29 +26,3 @@ export {
   deleteCard,
   pressLike,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const obj = {
-  name: 'Oleg',
-  age: 23,
-  haveJob: true,
-  diubleAge(n) {
-    return n * 2
-  }
-}
-
-console.log(
-  
-)
