@@ -2,6 +2,7 @@ import './pages/index.css';
 import { createCard, deleteCard, pressLike } from './components/card.js';
 import { initialCards } from './components/cards.js';
 import { openModal, closeModal } from './components/modal.js';
+import { enableValidation } from './components/validation.js';
 
 const placesList = document.querySelector('.places__list')
 
@@ -76,3 +77,13 @@ modals.forEach(modal => {
 initialCards.forEach(newPlaceCard => {
   placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
 })
+
+
+enableValidation({
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+}); 
