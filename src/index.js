@@ -2,7 +2,7 @@ import './pages/index.css';
 import { createCard, deleteCard, pressLike } from './components/card.js';
 import { initialCards } from './components/cards.js';
 import { openModal, closeModal } from './components/modal.js';
-import { enableValidation } from './components/validation.js';
+import { enableValidation, clearValidation } from './components/validation.js';
 
 const placesList = document.querySelector('.places__list')
 
@@ -23,6 +23,15 @@ const newPlaceUrlInput = newPlaceForm.elements['link']
 const imageModal = document.querySelector('.popup_type_image')
 const imageModalPicture = imageModal.querySelector('.popup__image')
 const imageModalCaption = imageModal.querySelector('.popup__caption')
+
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+}
 
 function profileFormSubmit(evt) {
   evt.preventDefault()
@@ -53,6 +62,7 @@ profileEditButton.addEventListener('click', () => {
   openModal(profileEditModal)
   profileEditForm.elements.name.value = profileName.textContent
   profileEditForm.elements.description.value = profileDescription.textContent
+  clearValidation(profileEditForm, validationConfig)
 })
 
 newPlaceButton.addEventListener('click', () => {
@@ -68,7 +78,7 @@ modals.forEach(modal => {
     closeModal(modal)
   })
   modal.addEventListener('click', evt => {
-    if (evt.target === modal) {
+    if (evt.target === evt.currentTarget) {
       closeModal(modal)
     }
   })
@@ -78,12 +88,6 @@ initialCards.forEach(newPlaceCard => {
   placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
 })
 
+enableValidation(validationConfig); 
 
-enableValidation({
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible'
-}); 
+
