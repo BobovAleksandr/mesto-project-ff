@@ -1,8 +1,10 @@
 import './pages/index.css'; 
 import { createCard, deleteCard, pressLike } from './components/card.js';
-import { initialCards } from './components/cards.js';
+// import { initialCards } from './components/cards.js';
+// TODO - удалить всё что связано с готовым массивом карточек
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation, clearValidation } from './components/validation.js';
+import { getInitialCards, postNewCard } from './components/api.js';
 
 const placesList = document.querySelector('.places__list')
 
@@ -47,6 +49,7 @@ function newPlaceFormSubmit(evt) {
     link: newPlaceUrlInput.value,
   }
   placesList.prepend(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
+  postNewCard(newPlaceCard)
   newPlaceForm.reset()
   closeModal(newPlaceModal)
 }
@@ -62,11 +65,13 @@ profileEditButton.addEventListener('click', () => {
   openModal(profileEditModal)
   profileEditForm.elements.name.value = profileName.textContent
   profileEditForm.elements.description.value = profileDescription.textContent
-  clearValidation(profileEditForm, validationConfig)
+  clearValidation(profileEditForm)
 })
 
 newPlaceButton.addEventListener('click', () => {
   openModal(newPlaceModal)
+  newPlaceForm.reset()
+  clearValidation(newPlaceForm)
 })
 
 newPlaceForm.addEventListener('submit', newPlaceFormSubmit)
@@ -84,10 +89,14 @@ modals.forEach(modal => {
   })
 })
 
-initialCards.forEach(newPlaceCard => {
-  placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
-})
+enableValidation(); 
 
-enableValidation(validationConfig); 
+getInitialCards()
+  .then(res => {
+    res.forEach(newPlaceCard => {
+      placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
+    })
+  })
 
+export { validationConfig } 
 
