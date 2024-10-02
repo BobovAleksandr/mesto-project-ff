@@ -1,12 +1,32 @@
 .profile__image {
+  position: relative;
   width: 120px;
   height: 120px;
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
+  border: none;
   border-radius: 50%;
   background-size: cover;
   background-position: center;
   margin: 0 29px 0 0;
+}
+
+.profile__image:hover:after {
+  position: absolute;
+  content: '';
+  inset: 0;
+  border-radius: 50%;
+  background: url(./../../../images/edit-icon.svg) rgba(0, 0, 0, 0.8) no-repeat center;
+  background-size: 20%;
+  cursor: pointer;
+}
+
+.profile__image:hover:active {
+  opacity: 0.5;
+}
+
+.profile__image:focus {
+  outline: none;
 }
 
 @media screen and (max-width: 740px) {

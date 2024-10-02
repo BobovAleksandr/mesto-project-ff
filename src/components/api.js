@@ -6,6 +6,42 @@ const config = {
   }
 }
 
+function getUserInfo() {
+  return fetch('https://nomoreparties.co/v1/wff-cohort-24/users/me', {
+    headers: config.headers
+  })
+  .then(res => {
+    if (res.ok) {
+      return res.json()
+    } else {
+      return Promise(`Ошибка: ${res.status}`)
+    }
+  })
+  .catch(err => {
+    console.log(err)
+  })
+}
+
+function updateUserInfo(name, about) {
+  return fetch('https://nomoreparties.co/v1/wff-cohort-24/users/me', {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify({
+      name, about
+    })
+  })
+}
+
+function updateUserAvatar(avatar) {
+  return fetch('https://nomoreparties.co/v1/wff-cohort-24/users/me/avatar', {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify({
+      avatar
+    })
+  })
+}
+
 function getInitialCards() {
   return fetch (`${config.baseUrl}/cards`, {
     headers: config.headers
@@ -32,14 +68,28 @@ function postNewCard(newPlaceCard) {
     headers: config.headers
   })
   .then(res => {
-    return res
-  })
-  .then(res => {
-    console.log(res)
+    if (res.ok) {
+      return res.json()
+    } else {
+      return Promise(`Ошибка: ${res.status}`)
+    }
   })
 }
 
+function removeCard(cardId) {
+  return fetch(`https://nomoreparties.co/v1/wff-cohort-24/cards/${cardId}`, {
+    method: 'DELETE',
+    headers: config.headers
+  })
+  .catch(err => console.log(err))
+}
+
+
 export {
   getInitialCards,
-  postNewCard
+  postNewCard,
+  removeCard,
+  getUserInfo,
+  updateUserInfo,
+  updateUserAvatar
 }

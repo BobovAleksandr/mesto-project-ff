@@ -1,20 +1,20 @@
 import './pages/index.css'; 
 import { createCard, deleteCard, pressLike } from './components/card.js';
-// import { initialCards } from './components/cards.js';
-// TODO - удалить всё что связано с готовым массивом карточек
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation, clearValidation } from './components/validation.js';
-import { getInitialCards, postNewCard } from './components/api.js';
+import { getInitialCards, postNewCard, removeCard, getUserInfo, updateUserInfo, updateUserAvatar } from './components/api.js';
 
 const placesList = document.querySelector('.places__list')
 
 const profileName = document.querySelector('.profile__title')
 const profileDescription = document.querySelector('.profile__description')
+const profileAvatar = document.querySelector('.profile__image')
+const profileAvatarModal = document.querySelector('.popup_type_new_avatar')
 const profileEditButton = document.querySelector('.profile__edit-button')
 const profileEditModal = document.querySelector('.popup_type_edit')
 const profileEditForm = document.forms['edit-profile']
-
-const modals = document.querySelectorAll('.popup')
+const profileAvatarForm = document.forms['new-avatar']
+const profileAvatarInput = profileAvatarForm.elements['link']
 
 const newPlaceModal = document.querySelector('.popup_type_new-card')
 const newPlaceButton = document.querySelector('.profile__add-button')
@@ -25,6 +25,10 @@ const newPlaceUrlInput = newPlaceForm.elements['link']
 const imageModal = document.querySelector('.popup_type_image')
 const imageModalPicture = imageModal.querySelector('.popup__image')
 const imageModalCaption = imageModal.querySelector('.popup__caption')
+
+const modals = document.querySelectorAll('.popup')
+
+let user
 
 const validationConfig = {
   formSelector: '.popup__form',
@@ -40,6 +44,7 @@ function profileFormSubmit(evt) {
   profileName.textContent = profileEditForm.elements.name.value
   profileDescription.textContent = profileEditForm.elements.description.value
   closeModal(profileEditModal)
+  updateUserInfo(profileName.textContent, profileDescription.textContent)
 }
 
 function newPlaceFormSubmit(evt) {
@@ -48,10 +53,21 @@ function newPlaceFormSubmit(evt) {
     name: newPlaceNameInput.value,
     link: newPlaceUrlInput.value,
   }
-  placesList.prepend(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
-  postNewCard(newPlaceCard)
+  postNewCard(newPlaceCard).then(newPlaceCard => {
+    placesList.prepend(createCard({newPlaceCard, deleteCard, pressLike, zoomCard, user}))
+  })
   newPlaceForm.reset()
   closeModal(newPlaceModal)
+}
+
+function profileAvatarFormSubmit(evt) {
+  evt.preventDefault()
+  const newAvatarUrl = profileAvatarInput.value
+  profileAvatar.style = `background-image: url('${newAvatarUrl}');`
+  clearValidation(profileAvatarForm)
+  closeModal(profileAvatarModal)
+  profileAvatarForm.reset()
+  updateUserAvatar(newAvatarUrl)
 }
 
 function zoomCard(cardName, cardUrl) {
@@ -68,6 +84,10 @@ profileEditButton.addEventListener('click', () => {
   clearValidation(profileEditForm)
 })
 
+profileAvatar.addEventListener('click', () => {
+  openModal(profileAvatarModal)
+})
+
 newPlaceButton.addEventListener('click', () => {
   openModal(newPlaceModal)
   newPlaceForm.reset()
@@ -77,6 +97,8 @@ newPlaceButton.addEventListener('click', () => {
 newPlaceForm.addEventListener('submit', newPlaceFormSubmit)
 
 profileEditForm.addEventListener('submit', profileFormSubmit)
+
+profileAvatarForm.addEventListener('submit', profileAvatarFormSubmit)
 
 modals.forEach(modal => {
   modal.querySelector('.popup__close').addEventListener('click', () => {
@@ -91,10 +113,14 @@ modals.forEach(modal => {
 
 enableValidation(); 
 
-getInitialCards()
-  .then(res => {
-    res.forEach(newPlaceCard => {
-      placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard}))
+Promise.all([getInitialCards(), getUserInfo()])
+  .then(([resCards, resUser]) => {
+    profileName.textContent = resUser.name
+    profileDescription.textContent = resUser.about
+    profileAvatar.style = `background-image: url('${resUser.avatar}');`
+    user = resUser
+    resCards.forEach(newPlaceCard => {
+      placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard, user}))
     })
   })
 
