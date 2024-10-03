@@ -1,32 +1,33 @@
 import './pages/index.css'; 
-import { createCard, deleteCard, pressLike } from './components/card.js';
+import { createCard, deleteCardElement, pressLike } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation, clearValidation } from './components/validation.js';
-import { getInitialCards, postNewCard, removeCard, getUserInfo, updateUserInfo, updateUserAvatar } from './components/api.js';
+import { getInitialCards, postNewCard, getUserInfo, updateUserInfo, updateUserAvatar, renderLoading } from './components/api.js';
 
 const placesList = document.querySelector('.places__list')
+const modals = document.querySelectorAll('.popup')
 
 const profileName = document.querySelector('.profile__title')
 const profileDescription = document.querySelector('.profile__description')
-const profileAvatar = document.querySelector('.profile__image')
-const profileAvatarModal = document.querySelector('.popup_type_new_avatar')
+
 const profileEditButton = document.querySelector('.profile__edit-button')
 const profileEditModal = document.querySelector('.popup_type_edit')
 const profileEditForm = document.forms['edit-profile']
+
+const profileAvatar = document.querySelector('.profile__image')
+const profileAvatarModal = document.querySelector('.popup_type_new_avatar')
 const profileAvatarForm = document.forms['new-avatar']
 const profileAvatarInput = profileAvatarForm.elements['link']
 
 const newPlaceModal = document.querySelector('.popup_type_new-card')
-const newPlaceButton = document.querySelector('.profile__add-button')
 const newPlaceForm = document.forms['new-place']
+const newPlaceButton = document.querySelector('.profile__add-button')
 const newPlaceNameInput = newPlaceForm.elements['place-name']
 const newPlaceUrlInput = newPlaceForm.elements['link']
 
 const imageModal = document.querySelector('.popup_type_image')
 const imageModalPicture = imageModal.querySelector('.popup__image')
 const imageModalCaption = imageModal.querySelector('.popup__caption')
-
-const modals = document.querySelectorAll('.popup')
 
 let user
 
@@ -41,33 +42,36 @@ const validationConfig = {
 
 function profileFormSubmit(evt) {
   evt.preventDefault()
+  renderLoading(profileEditModal, true)
   profileName.textContent = profileEditForm.elements.name.value
   profileDescription.textContent = profileEditForm.elements.description.value
-  closeModal(profileEditModal)
   updateUserInfo(profileName.textContent, profileDescription.textContent)
+  closeModal(profileEditModal)
 }
 
 function newPlaceFormSubmit(evt) {
   evt.preventDefault()
+  renderLoading(newPlaceModal, true)
   const newPlaceCard = {
     name: newPlaceNameInput.value,
     link: newPlaceUrlInput.value,
   }
-  postNewCard(newPlaceCard).then(newPlaceCard => {
-    placesList.prepend(createCard({newPlaceCard, deleteCard, pressLike, zoomCard, user}))
-  })
-  newPlaceForm.reset()
-  closeModal(newPlaceModal)
-}
+  postNewCard(newPlaceCard)
+    .then(newPlaceCard => {
+      placesList.prepend(createCard({newPlaceCard, deleteCardElement, pressLike, zoomCard, user}))
+    })
+    newPlaceForm.reset()
+    closeModal(newPlaceModal)
+  }
 
 function profileAvatarFormSubmit(evt) {
   evt.preventDefault()
   const newAvatarUrl = profileAvatarInput.value
   profileAvatar.style = `background-image: url('${newAvatarUrl}');`
   clearValidation(profileAvatarForm)
-  closeModal(profileAvatarModal)
   profileAvatarForm.reset()
   updateUserAvatar(newAvatarUrl)
+  closeModal(profileAvatarModal)
 }
 
 function zoomCard(cardName, cardUrl) {
@@ -120,9 +124,9 @@ Promise.all([getInitialCards(), getUserInfo()])
     profileAvatar.style = `background-image: url('${resUser.avatar}');`
     user = resUser
     resCards.forEach(newPlaceCard => {
-      placesList.append(createCard({newPlaceCard, deleteCard, pressLike, zoomCard, user}))
+      placesList.append(createCard({newPlaceCard, deleteCardElement, pressLike, zoomCard, user}))
     })
   })
 
-export { validationConfig } 
+export { validationConfig, user } 
 

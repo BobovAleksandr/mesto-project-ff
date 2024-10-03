@@ -14,32 +14,30 @@ function getUserInfo() {
     if (res.ok) {
       return res.json()
     } else {
-      return Promise(`Ошибка: ${res.status}`)
+      return Promise.reject(`Ошибка: ${res.status}`)
     }
   })
-  .catch(err => {
-    console.log(err)
-  })
+  .catch(err => console.log(err))
 }
 
 function updateUserInfo(name, about) {
   return fetch('https://nomoreparties.co/v1/wff-cohort-24/users/me', {
     method: 'PATCH',
     headers: config.headers,
-    body: JSON.stringify({
-      name, about
-    })
+    body: JSON.stringify({ name, about })
   })
+  .catch(err => console.log(err))
+  .finally(() => { renderLoading(false) })
 }
 
 function updateUserAvatar(avatar) {
   return fetch('https://nomoreparties.co/v1/wff-cohort-24/users/me/avatar', {
     method: 'PATCH',
     headers: config.headers,
-    body: JSON.stringify({
-      avatar
-    })
+    body: JSON.stringify({ avatar })
   })
+  .catch(err => console.log(err))
+  .finally(() => { renderLoading(false) })
 }
 
 function getInitialCards() {
@@ -50,12 +48,10 @@ function getInitialCards() {
     if (res.ok) {
       return res.json()
     } else {
-      return Promise(`Ошибка: ${res.status}`)
+      return Promise.reject(`Ошибка: ${res.status}`)
     }
   })
-  .catch(err => {
-    console.log(err)
-  })
+  .catch(err => console.log(err))
 }
 
 function postNewCard(newPlaceCard) {
@@ -71,9 +67,11 @@ function postNewCard(newPlaceCard) {
     if (res.ok) {
       return res.json()
     } else {
-      return Promise(`Ошибка: ${res.status}`)
+      return Promise.reject(`Ошибка: ${res.status}`)
     }
   })
+  .catch(err => console.log(err))
+  .finally(() => { renderLoading(false) })
 }
 
 function removeCard(cardId) {
@@ -84,6 +82,47 @@ function removeCard(cardId) {
   .catch(err => console.log(err))
 }
 
+function addLike(cardId) {
+  return fetch(`https://nomoreparties.co/v1/wff-cohort-24/cards/likes/${cardId}`, {
+    method: 'PUT',
+    headers: config.headers
+  })
+  .then(res => {
+    if (res.ok) {
+      return res.json()
+    } else {
+      return Promise.reject(`Ошибка: ${res.status}`)
+    }
+  })
+  .catch(err => console.log(err))
+}
+
+function removeLike(cardId) {
+  return fetch(`https://nomoreparties.co/v1/wff-cohort-24/cards/likes/${cardId}`, {
+    method: 'DELETE',
+    headers: config.headers
+  })
+  .then(res => {
+    if (res.ok) {
+      return res.json()
+    } else {
+      return Promise.reject(`Ошибка: ${res.status}`)
+    }
+  })
+  .catch(err => console.log(err))
+}
+
+// TODO криво работает renderLoading
+
+function renderLoading(isLoading) {
+  const currentModal = document.querySelector('.popup_is-opened')
+  const currentModalButton = currentModal.querySelector('.popup__button')
+  if (isLoading) {
+    currentModalButton.textContent = 'Сохранение...'
+  } else {
+    currentModalButton.textContent = 'Сохранить'
+  }
+}
 
 export {
   getInitialCards,
@@ -91,5 +130,8 @@ export {
   removeCard,
   getUserInfo,
   updateUserInfo,
-  updateUserAvatar
+  updateUserAvatar,
+  addLike,
+  removeLike,
+  renderLoading,
 }
