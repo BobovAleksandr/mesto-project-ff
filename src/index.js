@@ -1,8 +1,8 @@
 import './pages/index.css'; 
-import { createCard, deleteCardElement, pressLike } from './components/card.js';
+import { createCard, pressLike } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
-import { enableValidation, clearValidation } from './components/validation.js';
-import { getInitialCards, postNewCard, getUserInfo, updateUserInfo, updateUserAvatar, renderLoading } from './components/api.js';
+import { enableValidation, clearValidation, showInputError } from './components/validation.js';
+import { getInitialCards, postNewCard, getUserInfo, updateUserInfo, updateUserAvatar, renderLoading, checkMimeType } from './components/api.js';
 
 const placesList = document.querySelector('.places__list')
 const modals = document.querySelectorAll('.popup')
@@ -29,6 +29,17 @@ const imageModal = document.querySelector('.popup_type_image')
 const imageModalPicture = imageModal.querySelector('.popup__image')
 const imageModalCaption = imageModal.querySelector('.popup__caption')
 
+const imageContentTypes = [
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/tiff',
+  'image/vnd.microsoft.icon',
+  'image/x-icon',
+  'image/vnd.djvu',
+  'image/svg+xml'
+ ]
+
 let user
 
 const validationConfig = {
@@ -42,10 +53,11 @@ const validationConfig = {
 
 function profileFormSubmit(evt) {
   evt.preventDefault()
-  renderLoading(profileEditModal, true)
+  renderLoading(profileEditForm, true)
   profileName.textContent = profileEditForm.elements.name.value
   profileDescription.textContent = profileEditForm.elements.description.value
   updateUserInfo(profileName.textContent, profileDescription.textContent)
+    .finally(() => { renderLoading(profileEditForm, false) })
   closeModal(profileEditModal)
 }
 
@@ -58,20 +70,34 @@ function newPlaceFormSubmit(evt) {
   }
   postNewCard(newPlaceCard)
     .then(newPlaceCard => {
-      placesList.prepend(createCard({newPlaceCard, deleteCardElement, pressLike, zoomCard, user}))
+      placesList.prepend(createCard({newPlaceCard, pressLike, zoomCard, user}))
     })
-    newPlaceForm.reset()
-    closeModal(newPlaceModal)
+    .finally(() => { renderLoading(newPlaceModal, false) })
+  newPlaceForm.reset()
+  closeModal(newPlaceModal)
   }
 
 function profileAvatarFormSubmit(evt) {
   evt.preventDefault()
   const newAvatarUrl = profileAvatarInput.value
-  profileAvatar.style = `background-image: url('${newAvatarUrl}');`
-  clearValidation(profileAvatarForm)
-  profileAvatarForm.reset()
-  updateUserAvatar(newAvatarUrl)
-  closeModal(profileAvatarModal)
+  checkMimeType(newAvatarUrl)
+    .then(data => {
+      console.log(data)
+      if (imageContentTypes.some(type => type === data.headers.get('content-type'))) {
+          renderLoading(profileAvatarModal, true)
+          profileAvatar.style = `background-image: url('${newAvatarUrl}');`
+          clearValidation(profileAvatarForm)
+          profileAvatarForm.reset()
+          updateUserAvatar(newAvatarUrl)
+            .finally(() => { renderLoading(profileAvatarModal, false) })
+          closeModal(profileAvatarModal)
+        } else {
+          showInputError(profileAvatarForm, profileAvatarInput, 'Вставьте ссылку на изображение')
+        }
+      })
+    .catch(() => {
+      showInputError(profileAvatarForm, profileAvatarInput, 'Вставьте ссылку на изображение')
+    })
 }
 
 function zoomCard(cardName, cardUrl) {
@@ -124,7 +150,7 @@ Promise.all([getInitialCards(), getUserInfo()])
     profileAvatar.style = `background-image: url('${resUser.avatar}');`
     user = resUser
     resCards.forEach(newPlaceCard => {
-      placesList.append(createCard({newPlaceCard, deleteCardElement, pressLike, zoomCard, user}))
+      placesList.append(createCard({newPlaceCard, pressLike, zoomCard, user}))
     })
   })
 

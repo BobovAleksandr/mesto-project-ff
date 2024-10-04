@@ -6,6 +6,8 @@ const config = {
   }
 }
 
+
+
 function getUserInfo() {
   return fetch('https://nomoreparties.co/v1/wff-cohort-24/users/me', {
     headers: config.headers
@@ -27,7 +29,6 @@ function updateUserInfo(name, about) {
     body: JSON.stringify({ name, about })
   })
   .catch(err => console.log(err))
-  .finally(() => { renderLoading(false) })
 }
 
 function updateUserAvatar(avatar) {
@@ -37,7 +38,6 @@ function updateUserAvatar(avatar) {
     body: JSON.stringify({ avatar })
   })
   .catch(err => console.log(err))
-  .finally(() => { renderLoading(false) })
 }
 
 function getInitialCards() {
@@ -71,7 +71,6 @@ function postNewCard(newPlaceCard) {
     }
   })
   .catch(err => console.log(err))
-  .finally(() => { renderLoading(false) })
 }
 
 function removeCard(cardId) {
@@ -112,16 +111,27 @@ function removeLike(cardId) {
   .catch(err => console.log(err))
 }
 
-// TODO криво работает renderLoading
-
-function renderLoading(isLoading) {
-  const currentModal = document.querySelector('.popup_is-opened')
-  const currentModalButton = currentModal.querySelector('.popup__button')
+function renderLoading(element, isLoading) {
+  const currentButton = element.querySelector('.popup__button')
   if (isLoading) {
-    currentModalButton.textContent = 'Сохранение...'
+    currentButton.textContent = 'Сохранение...'
   } else {
-    currentModalButton.textContent = 'Сохранить'
+    currentButton.textContent = 'Сохранить'
   }
+}
+
+function checkMimeType(url) {
+  return fetch(`${url}`, {
+    method: 'HEAD',
+  })
+  .then(res => {
+    if (res.ok) {
+      return res
+    } else {
+      return Promise.reject(`Ошибка: ${res.status}`)
+    }
+  })
+  // .catch(err => console.log(err))
 }
 
 export {
@@ -134,4 +144,5 @@ export {
   addLike,
   removeLike,
   renderLoading,
+  checkMimeType,
 }

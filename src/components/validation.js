@@ -82,5 +82,6 @@ function clearValidation(formElement) {
 export {
   enableValidation,
   clearValidation,
+  showInputError
 }
 
