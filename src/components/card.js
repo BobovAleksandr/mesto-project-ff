@@ -5,28 +5,26 @@ import { openModal, closeModal } from './modal.js'
 const cardTemplate = document.querySelector('#card-template').content
 const confirmModal = document.querySelector('.popup_type_confirm')
 
+function removeCardHandler() {}
 
 function createCard(params) {
- 
   const currentCardElement = cardTemplate.querySelector('.card').cloneNode(true)
   const currentDeleteButton = currentCardElement.querySelector('.card__delete-button')
   currentCardElement.querySelector('.card__image').src = params.newPlaceCard.link
   currentCardElement.querySelector('.card__image').alt = params.newPlaceCard.name
   currentCardElement.querySelector('.card__title').textContent = params.newPlaceCard.name
   changeLikeCounter(currentCardElement, params.newPlaceCard.likes.length)
-
-  function removeCardHandler(evt) {
-    evt.preventDefault()
-    removeCard(params.newPlaceCard._id)
-    confirmModal.removeEventListener('submit', removeCardHandler)
-    currentDeleteButton.closest('.card').remove()
-    closeModal(confirmModal)
-  }
-
+  
   if (params.newPlaceCard.owner._id === params.user._id) {
     currentDeleteButton.addEventListener('click', () => {
+      removeCardHandler = function(evt) {
+        evt.preventDefault()
+        removeCard(params.newPlaceCard._id)
+        currentDeleteButton.closest('.card').remove()
+        closeModal(confirmModal)
+      }
+      console.log(removeCardHandler)
       openModal(confirmModal)
-      confirmModal.addEventListener('submit', removeCardHandler)
   })
   } else {
     currentDeleteButton.setAttribute('style', 'display: none')
@@ -67,7 +65,10 @@ function changeLikeCounter(cardElement, likesValue) {
   cardElement.querySelector('.card__like-counter').textContent = likesValue
 }
 
+confirmModal.addEventListener('submit', (evt) => {removeCardHandler(evt)})
+
 export {
   createCard,
   pressLike,
 }
+

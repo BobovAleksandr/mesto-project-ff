@@ -6,8 +6,6 @@ const config = {
   }
 }
 
-
-
 function getUserInfo() {
   return fetch('https://nomoreparties.co/v1/wff-cohort-24/users/me', {
     headers: config.headers
@@ -57,11 +55,11 @@ function getInitialCards() {
 function postNewCard(newPlaceCard) {
   return fetch('https://nomoreparties.co/v1/wff-cohort-24/cards', {
     method: 'POST',
+    headers: config.headers,
     body: JSON.stringify({ 
       name: newPlaceCard.name, 
       link: newPlaceCard.link 
-    }),
-    headers: config.headers
+    })
   })
   .then(res => {
     if (res.ok) {
@@ -131,7 +129,7 @@ function checkMimeType(url) {
       return Promise.reject(`Ошибка: ${res.status}`)
     }
   })
-  // .catch(err => console.log(err))
+  .catch(err => console.log(err))
 }
 
 export {

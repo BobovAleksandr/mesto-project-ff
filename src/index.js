@@ -29,6 +29,8 @@ const imageModal = document.querySelector('.popup_type_image')
 const imageModalPicture = imageModal.querySelector('.popup__image')
 const imageModalCaption = imageModal.querySelector('.popup__caption')
 
+
+
 const imageContentTypes = [
   'image/gif',
   'image/jpeg',
@@ -82,7 +84,6 @@ function profileAvatarFormSubmit(evt) {
   const newAvatarUrl = profileAvatarInput.value
   checkMimeType(newAvatarUrl)
     .then(data => {
-      console.log(data)
       if (imageContentTypes.some(type => type === data.headers.get('content-type'))) {
           renderLoading(profileAvatarModal, true)
           profileAvatar.style = `background-image: url('${newAvatarUrl}');`
@@ -108,9 +109,9 @@ function zoomCard(cardName, cardUrl) {
 }
 
 profileEditButton.addEventListener('click', () => {
-  openModal(profileEditModal)
   profileEditForm.elements.name.value = profileName.textContent
   profileEditForm.elements.description.value = profileDescription.textContent
+  openModal(profileEditModal)
   clearValidation(profileEditForm)
 })
 
@@ -141,7 +142,7 @@ modals.forEach(modal => {
   })
 })
 
-enableValidation(); 
+enableValidation()
 
 Promise.all([getInitialCards(), getUserInfo()])
   .then(([resCards, resUser]) => {

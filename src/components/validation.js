@@ -2,9 +2,8 @@ import { validationConfig } from './../index.js'
 
 function enableValidation() {
   const formsList = Array.from(document.querySelectorAll(`${validationConfig.formSelector}`))
-
   formsList.forEach(formElement => {
-    setEventListeners(formElement, validationConfig)
+    setEventListeners(formElement)
   })
 }
 
@@ -12,7 +11,7 @@ function checkInputValidity(formElement, inputElement) {
   if (inputElement.validity.patternMismatch) {
     inputElement.setCustomValidity(inputElement.dataset.errorMessage)
   } else {
-    inputElement.setCustomValidity("")
+    inputElement.setCustomValidity('')
   }    
   if (!inputElement.validity.valid) {
     showInputError(formElement, inputElement, inputElement.validationMessage);
@@ -34,25 +33,16 @@ function setEventListeners(formElement) {
   })
 }
 
-// TODO - Кнопка сохранить должна быть активна при открытии модального окна профиля
 function toggleButtonState(inputList, buttonElement) {
-  // console.log('toggleButtonState')
   if (hasInvalidInput(inputList)) {
-    // console.log(inputList)
     buttonElement.classList.add(`${validationConfig.inactiveButtonClass}`)
-    // console.log('is INvalid')
   } else {
-    // console.log(inputList)
     buttonElement.classList.remove(`${validationConfig.inactiveButtonClass}`)
-    // console.log('is valid')
   }
 }
 
 function hasInvalidInput(inputList) {
   return inputList.some(input => {
-    // console.log(input.value)
-    // console.log(input.validity)
-    // console.log(`validity: ${input.validity.valid}`)
     return !input.validity.valid
   })
 }
@@ -74,6 +64,7 @@ function hideInputError(formElement, inputElement) {
 function clearValidation(formElement) {
   const inputList = Array.from(formElement.querySelectorAll(`${validationConfig.inputSelector}`))
   inputList.forEach(inputElement => {
+    checkInputValidity(formElement, inputElement)
     hideInputError(formElement, inputElement)
   })
   toggleButtonState(inputList, formElement.querySelector('.popup__button'))
