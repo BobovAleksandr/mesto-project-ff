@@ -1,11 +1,6 @@
-import { removeCard, addLike, removeLike } from './api.js'
-import { user } from './../index.js'
-import { openModal, closeModal } from './modal.js'
+import { addLike, removeLike } from './api.js'
 
 const cardTemplate = document.querySelector('#card-template').content
-const confirmModal = document.querySelector('.popup_type_confirm')
-
-function removeCardHandler() {}
 
 function createCard(params) {
   const currentCardElement = cardTemplate.querySelector('.card').cloneNode(true)
@@ -17,20 +12,13 @@ function createCard(params) {
   
   if (params.newPlaceCard.owner._id === params.user._id) {
     currentDeleteButton.addEventListener('click', () => {
-      removeCardHandler = function(evt) {
-        evt.preventDefault()
-        removeCard(params.newPlaceCard._id)
-        currentDeleteButton.closest('.card').remove()
-        closeModal(confirmModal)
-      }
-      console.log(removeCardHandler)
-      openModal(confirmModal)
+      params.deleteCallback(currentCardElement, params.newPlaceCard._id)
   })
   } else {
     currentDeleteButton.setAttribute('style', 'display: none')
   }
 
-  if (params.newPlaceCard.likes.some(likedUser => likedUser._id === user._id)) {
+  if (params.newPlaceCard.likes.some(likedUser => likedUser._id === params.user._id)) {
     currentCardElement.querySelector('.card__like-button').classList.add('card__like-button_is-active')
   }
 
@@ -46,26 +34,18 @@ function createCard(params) {
 }
 
 function pressLike(event, card, cardElement) {
-  if (event.target.classList.contains('card__like-button_is-active')) {
-    removeLike(card._id)
+  const likeMethod = event.target.classList.contains('card__like-button_is-active') ? removeLike : addLike
+  likeMethod(card._id)
     .then(data => {
       changeLikeCounter(cardElement, data.likes.length)
-      event.target.classList.remove('card__like-button_is-active')
+      event.target.classList.toggle('card__like-button_is-active')
       })
-  } else {
-    addLike(card._id)
-    .then(data => {
-      changeLikeCounter(cardElement, data.likes.length)
-      event.target.classList.add('card__like-button_is-active')
-      })
-  }
+    .catch(err => console.log(err))
 }
 
 function changeLikeCounter(cardElement, likesValue) {
   cardElement.querySelector('.card__like-counter').textContent = likesValue
 }
-
-confirmModal.addEventListener('submit', (evt) => {removeCardHandler(evt)})
 
 export {
   createCard,

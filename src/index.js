@@ -2,7 +2,7 @@ import './pages/index.css';
 import { createCard, pressLike } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation, clearValidation, showInputError } from './components/validation.js';
-import { getInitialCards, postNewCard, getUserInfo, updateUserInfo, updateUserAvatar, renderLoading, checkMimeType } from './components/api.js';
+import { getInitialCards, postNewCard, getUserInfo, updateUserInfo, updateUserAvatar, checkMimeType, removeCard } from './components/api.js';
 
 const placesList = document.querySelector('.places__list')
 const modals = document.querySelectorAll('.popup')
@@ -29,7 +29,7 @@ const imageModal = document.querySelector('.popup_type_image')
 const imageModalPicture = imageModal.querySelector('.popup__image')
 const imageModalCaption = imageModal.querySelector('.popup__caption')
 
-
+const confirmModal = document.querySelector('.popup_type_confirm')
 
 const imageContentTypes = [
   'image/gif',
@@ -43,6 +43,8 @@ const imageContentTypes = [
  ]
 
 let user
+let cardToDelete
+let cardIdToDelete
 
 const validationConfig = {
   formSelector: '.popup__form',
@@ -56,9 +58,12 @@ const validationConfig = {
 function profileFormSubmit(evt) {
   evt.preventDefault()
   renderLoading(profileEditForm, true)
-  profileName.textContent = profileEditForm.elements.name.value
-  profileDescription.textContent = profileEditForm.elements.description.value
-  updateUserInfo(profileName.textContent, profileDescription.textContent)
+  updateUserInfo(profileEditForm.elements.name.value, profileEditForm.elements.description.value)
+    .then(data => {
+        profileName.textContent = data.name
+        profileDescription.textContent = data.about
+      })
+    .catch(err => console.log(err))
     .finally(() => { renderLoading(profileEditForm, false) })
   closeModal(profileEditModal)
 }
@@ -72,8 +77,9 @@ function newPlaceFormSubmit(evt) {
   }
   postNewCard(newPlaceCard)
     .then(newPlaceCard => {
-      placesList.prepend(createCard({newPlaceCard, pressLike, zoomCard, user}))
+      placesList.prepend(createCard({newPlaceCard, pressLike, zoomCard, deleteCallback, user}))
     })
+    .catch(err => console.log(err))
     .finally(() => { renderLoading(newPlaceModal, false) })
   newPlaceForm.reset()
   closeModal(newPlaceModal)
@@ -86,19 +92,20 @@ function profileAvatarFormSubmit(evt) {
     .then(data => {
       if (imageContentTypes.some(type => type === data.headers.get('content-type'))) {
           renderLoading(profileAvatarModal, true)
-          profileAvatar.style = `background-image: url('${newAvatarUrl}');`
-          clearValidation(profileAvatarForm)
+          clearValidation(profileAvatarForm, validationConfig)
           profileAvatarForm.reset()
           updateUserAvatar(newAvatarUrl)
+            .then(data => {
+              profileAvatar.style = `background-image: url('${data.avatar}');`
+            })
+            .catch(err => console.log(err))
             .finally(() => { renderLoading(profileAvatarModal, false) })
           closeModal(profileAvatarModal)
         } else {
-          showInputError(profileAvatarForm, profileAvatarInput, 'Вставьте ссылку на изображение')
+          showInputError(profileAvatarForm, profileAvatarInput, 'Вставьте ссылку на изображение', validationConfig)
         }
       })
-    .catch(() => {
-      showInputError(profileAvatarForm, profileAvatarInput, 'Вставьте ссылку на изображение')
-    })
+    .catch(err => console.log(err))
 }
 
 function zoomCard(cardName, cardUrl) {
@@ -108,11 +115,22 @@ function zoomCard(cardName, cardUrl) {
   openModal(imageModal)
 }
 
+function renderLoading(element, isLoading) {
+  const currentButton = element.querySelector('.popup__button')
+  currentButton.textContent = isLoading ? 'Сохранение...' : 'Сохранить'
+}
+
+function deleteCallback(card, id) {
+  cardToDelete = card
+  cardIdToDelete = id
+  openModal(confirmModal)
+}
+
 profileEditButton.addEventListener('click', () => {
   profileEditForm.elements.name.value = profileName.textContent
   profileEditForm.elements.description.value = profileDescription.textContent
   openModal(profileEditModal)
-  clearValidation(profileEditForm)
+  clearValidation(profileEditForm, validationConfig)
 })
 
 profileAvatar.addEventListener('click', () => {
@@ -122,7 +140,7 @@ profileAvatar.addEventListener('click', () => {
 newPlaceButton.addEventListener('click', () => {
   openModal(newPlaceModal)
   newPlaceForm.reset()
-  clearValidation(newPlaceForm)
+  clearValidation(newPlaceForm, validationConfig)
 })
 
 newPlaceForm.addEventListener('submit', newPlaceFormSubmit)
@@ -130,6 +148,16 @@ newPlaceForm.addEventListener('submit', newPlaceFormSubmit)
 profileEditForm.addEventListener('submit', profileFormSubmit)
 
 profileAvatarForm.addEventListener('submit', profileAvatarFormSubmit)
+
+confirmModal.addEventListener('submit', (evt) => {
+  evt.preventDefault()
+  removeCard(cardIdToDelete)
+    .then(() => {
+      cardToDelete.remove()
+      closeModal(confirmModal)
+    })
+    .catch(err => console.log(err))
+})
 
 modals.forEach(modal => {
   modal.querySelector('.popup__close').addEventListener('click', () => {
@@ -142,7 +170,7 @@ modals.forEach(modal => {
   })
 })
 
-enableValidation()
+enableValidation(validationConfig)
 
 Promise.all([getInitialCards(), getUserInfo()])
   .then(([resCards, resUser]) => {
@@ -151,9 +179,10 @@ Promise.all([getInitialCards(), getUserInfo()])
     profileAvatar.style = `background-image: url('${resUser.avatar}');`
     user = resUser
     resCards.forEach(newPlaceCard => {
-      placesList.append(createCard({newPlaceCard, pressLike, zoomCard, user}))
+      placesList.append(createCard({newPlaceCard, pressLike, zoomCard, deleteCallback, user}))
     })
   })
+  .catch(err => console.log(err))
 
-export { validationConfig, user } 
+export { user } 
 
